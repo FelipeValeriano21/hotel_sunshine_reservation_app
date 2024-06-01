@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotel_sunshine_app/controllers/reserva_controller.dart';
 import 'package:hotel_sunshine_app/views/payment_screen_view.dart';
+import 'package:intl/intl.dart'; // Import necessário para a formatação de datas
 
 class ReservaPage extends StatefulWidget {
   @override
@@ -9,11 +10,12 @@ class ReservaPage extends StatefulWidget {
 }
 
 class _ReservaPageState extends State<ReservaPage> {
-  final ReservaController reservaController = Get.put(ReservaController());
+  final ReservaController reservaController = Get.put(ReservaController()); // Inicializa o controlador
+
   String? _selectedItem2;
   List<String> _items2 = ['1', '2', '3', '4', '5'];
-  
-  String? _selectedRadioItem; // Adicione esta linha para gerenciar o estado do RadioButton
+
+  String? _selectedRadioItem;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +29,14 @@ class _ReservaPageState extends State<ReservaPage> {
         child: Column(
           children: [
             TextField(
-              onChanged: (value) => reservaController.setAccommodationPreferences(value),
+              onChanged: (value) => reservaController.setNomeCompleto(value),
               decoration: InputDecoration(
                 labelText: 'Seu nome completo',
               ),
             ),
             SizedBox(height: 20),
             Obx(() => ListTile(
-              title: Text('Data de Check-in: ${reservaController.checkInDate.value.toLocal()}'.split(' ')[0]),
+              title: Text('Data de Check-in: ${DateFormat('dd/MM/yyyy').format(reservaController.checkInDate.value)}'),
               trailing: Icon(Icons.keyboard_arrow_down),
               onTap: () async {
                 DateTime? picked = await showDatePicker(
@@ -49,7 +51,7 @@ class _ReservaPageState extends State<ReservaPage> {
               },
             )),
             Obx(() => ListTile(
-              title: Text('Data de Check-out: ${reservaController.checkOutDate.value.toLocal()}'.split(' ')[0]),
+              title: Text('Data de Check-out: ${DateFormat('dd/MM/yyyy').format(reservaController.checkOutDate.value)}'),
               trailing: Icon(Icons.keyboard_arrow_down),
               onTap: () async {
                 DateTime? picked = await showDatePicker(
@@ -73,6 +75,7 @@ class _ReservaPageState extends State<ReservaPage> {
                     setState(() {
                       _selectedItem2 = value;
                     });
+                    reservaController.setNumeroPessoas(value!);
                   },
                   items: _items2.map((String item) {
                     return DropdownMenuItem<String>(
@@ -85,7 +88,7 @@ class _ReservaPageState extends State<ReservaPage> {
             ),
             SizedBox(height: 20),
             Text("Escolha o tipo de quarto:", style: TextStyle(fontSize: 16)),
-              SizedBox(height: 20),
+            SizedBox(height: 20),
             Column(
               children: [
                 RadioListTile<String>(
@@ -123,6 +126,7 @@ class _ReservaPageState extends State<ReservaPage> {
                     setState(() {
                       _selectedRadioItem = value;
                     });
+                    reservaController.setTipoQuarto(value!);
                   },
                 ),
                 RadioListTile<String>(
@@ -160,6 +164,7 @@ class _ReservaPageState extends State<ReservaPage> {
                     setState(() {
                       _selectedRadioItem = value;
                     });
+                    reservaController.setTipoQuarto(value!);
                   },
                 ),
                 RadioListTile<String>(
@@ -197,6 +202,7 @@ class _ReservaPageState extends State<ReservaPage> {
                     setState(() {
                       _selectedRadioItem = value;
                     });
+                    reservaController.setTipoQuarto(value!);
                   },
                 ),
                 RadioListTile<String>(
@@ -228,19 +234,20 @@ class _ReservaPageState extends State<ReservaPage> {
                       ),
                     ],
                   ),
-                  value: "Suíte",
+                  value: "Suíte Master",
                   groupValue: _selectedRadioItem,
                   onChanged: (value) {
                     setState(() {
                       _selectedRadioItem = value;
                     });
+                    reservaController.setTipoQuarto(value!);
                   },
                 ),
               ],
             ),
-                  SizedBox(height: 10),
-             TextField(
-              onChanged: (value) => reservaController.setAccommodationPreferences(value),
+            SizedBox(height: 10),
+            TextField(
+              onChanged: (value) => reservaController.setObservacao(value),
               decoration: InputDecoration(
                 labelText: 'Alguma Observação ',
               ),
@@ -248,32 +255,32 @@ class _ReservaPageState extends State<ReservaPage> {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-              showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text("Confirmação de Reserva"),
-                                content: Text("Caso deseje prosseguir você será levado até a tela de pagamento"),
-                                actions: [
-                                  TextButton(
-                                    child: Text("Cancelar"),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                   TextButton(
-                                    child: Text("Confirmar"),
-                                    onPressed: () {
-                                        Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => PurchaseDetailsPage()),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          ); 
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Confirmação de Reserva"),
+                      content: Text("Caso deseje prosseguir você será levado até a tela de pagamento"),
+                      actions: [
+                        TextButton(
+                          child: Text("Cancelar"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: Text("Confirmar"),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => PurchaseDetailsPage()),
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 0, 88, 195)),
@@ -288,7 +295,6 @@ class _ReservaPageState extends State<ReservaPage> {
               ),
               child: Text('Confirmar Reserva', style: TextStyle(fontSize: 18, color: Colors.white)),
             ),
-           
           ],
         ),
       ),

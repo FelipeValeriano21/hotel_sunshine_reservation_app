@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hotel_sunshine_app/controllers/reserva_controller.dart';
+import 'package:intl/intl.dart'; // Import necessário para a formatação de datas
 
 class PurchaseDetailsPage extends StatelessWidget {
+  final ReservaController reservaController = Get.find(); // Busca o controlador já existente
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,20 +23,20 @@ class PurchaseDetailsPage extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            Text(
-              'Data check-in: 28/05/2024',
+            Obx(() => Text(
+              'Data check-in: ${DateFormat('dd/MM/yyyy').format(reservaController.checkInDate.value)}',
               style: TextStyle(fontSize: 18),
-            ),
+            )),
             SizedBox(height: 10),
-              Text(
-              'Data check-out: 30/05/2024',
+            Obx(() => Text(
+              'Data check-out: ${DateFormat('dd/MM/yyyy').format(reservaController.checkOutDate.value)}',
               style: TextStyle(fontSize: 18),
-            ),
+            )),
             SizedBox(height: 20),
-            Text(
-              'Cliente: João Silva',
+            Obx(() => Text(
+              'Cliente: ${reservaController.nomeCompleto.value}',
               style: TextStyle(fontSize: 18),
-            ),
+            )),
             SizedBox(height: 60),
             Text(
               'Itens:',
@@ -41,35 +46,35 @@ class PurchaseDetailsPage extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  ListTile(
+                  Obx(() => ListTile(
                     title: Text('Numero de Pessoas'),
-                    trailing: Text('4'),
-                  ),
-                  ListTile(
+                    trailing: Text(reservaController.numeroPessoas.value),
+                  )),
+                  Obx(() => ListTile(
                     title: Text('Tipo de Acomodação'),
-                    trailing: Text('Suite Master'),
-                  ),
+                    trailing: Text(reservaController.tipoQuarto.value),
+                  )),
                   ListTile(
                     title: Text('Numero de diarias'),
-                    trailing: Text('3'),
+                    trailing: Obx(() => Text(((reservaController.checkOutDate.value.difference(reservaController.checkInDate.value).inDays).toString()))),
                   ),
                 ],
               ),
             ),
             Divider(),
             SizedBox(height: 10),
-            Text(
-              'Subtotal: R\$50.00',
+            Obx(() => Text(
+              'Subtotal: R\$${calculaSubtotal()}',
               style: TextStyle(fontSize: 18),
-            ),
+            )),
             Text(
               'Taxa de Serviço: R\$5.00',
               style: TextStyle(fontSize: 18),
             ),
-            Text(
-              'Total: R\$55.00',
+            Obx(() => Text(
+              'Total: R\$${calculaTotal()}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            )),
             SizedBox(height: 20),
             Center(
               child: ElevatedButton(
@@ -98,10 +103,31 @@ class PurchaseDetailsPage extends StatelessWidget {
       ),
     );
   }
-}
 
-void main() {
-  runApp(MaterialApp(
-    home: PurchaseDetailsPage(),
-  ));
+  double calculaSubtotal() {
+    double precoPorDia;
+    switch (reservaController.tipoQuarto.value) {
+      case 'Individual':
+        precoPorDia = 50.0;
+        break;
+      case 'Duplo':
+        precoPorDia = 90.0;
+        break;
+      case 'Suíte':
+        precoPorDia = 95.0;
+        break;
+      case 'Suíte Master':
+        precoPorDia = 160.0;
+        break;
+      default:
+        precoPorDia = 0.0;
+        break;
+    }
+    int numeroDiarias = reservaController.checkOutDate.value.difference(reservaController.checkInDate.value).inDays;
+    return precoPorDia * numeroDiarias;
+  }
+
+  double calculaTotal() {
+    return calculaSubtotal() + 5.0; // Inclui a taxa de serviço
+  }
 }
